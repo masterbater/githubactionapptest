@@ -15,5 +15,5 @@ RUN npm run build
 # ========= RUN =========
 FROM caddy:2.5.1-alpine
 
-COPY Caddyfile /etc/caddy/Caddyfile
+COPY CaddyfileForImageOnly /etc/caddy/Caddyfile
 COPY --from=builder /app/build /var/www/html
