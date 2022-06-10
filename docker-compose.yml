@@ -1,5 +1,10 @@
+#curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# unzip awscliv2.zip
+# sudo ./aws/install
 # Before compose up run this "docker network create caddy"
 # aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 155635619005.dkr.ecr.us-east-2.amazonaws.com
+# docker volume create helper 
+# follow setup here for watchtower https://containrrr.dev/watchtower/private-registries/
 version: "3"
 services:
   caddy:
@@ -20,23 +25,45 @@ services:
       - smarthealthui
   smarthealthui:
     image: 155635619005.dkr.ecr.us-east-2.amazonaws.com/githubactionapptest:react_demo_image
-
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     restart: always
     networks:
       - caddy
     labels:
-      caddy.tls: "internal"
+      com.centurylinklabs.watchtower.enable: true
       caddy: testncare.com
       caddy.reverse_proxy: "{{upstreams 3009}}"
+
   watchtower:
     image: containrrr/watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /root/.docker/config.json:/config.json
+      - ./ecrConfig.json:/config.json
+      - helper:/go/bin
+    environment:
+      - HOME=/
+      - PATH=$PATH:/go/bin
+      - AWS_REGION=us-east-2
+      - WATCHTOWER_DEBUG=true
+      - WATCHTOWER_TRACE=true
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+    # labels:
+    #   com.centurylinklabs.watchtower.enable: true
     command: --interval 30
 networks:
   caddy:
     external: true
 
 volumes:
-  caddy_data: {}
+  caddy_data:
+    external: true
+  caddy_config:
+  helper:
+    external: true
