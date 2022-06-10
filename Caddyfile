@@ -1,4 +1,4 @@
-testncare.com:3009   {
+http://localhost:3009   {
    handle /* {
         root * /var/www/html     
         try_files {path} /index.html

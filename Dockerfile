@@ -13,9 +13,7 @@ COPY . .
 RUN npm run build
 
 # ========= RUN =========
-FROM node:alpine3.15
-WORKDIR /app
-COPY --from=builder /app/build /app/build
-COPY package.json .
-RUN npm install serve
-CMD [ "npm", "run", "serve"]
+FROM caddy:2.5.1-alpine
+
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY --from=builder /app/build /var/www/html
